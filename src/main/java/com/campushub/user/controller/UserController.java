@@ -1,5 +1,6 @@
 package com.campushub.user.controller;
 
+import com.campushub.user.dto.UserCreationRequest;
 import com.campushub.user.model.User;
 import com.campushub.user.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +32,8 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> create(@RequestBody User user) {
-        User saved = service.save(user);
+    public ResponseEntity<User> create(@RequestBody UserCreationRequest request) {
+        User saved = service.createUser(request);
         return ResponseEntity.created(URI.create("/api/users/" + saved.getId())).body(saved);
     }
 
