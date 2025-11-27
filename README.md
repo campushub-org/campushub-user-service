@@ -61,3 +61,127 @@ Pour vérifier les logs du service une fois démarré:
 cd campushub-deployment
 docker-compose logs campushub-user-service
 ```
+
+### Endpoints de l'API
+
+Voici la liste des endpoints disponibles pour ce service.
+
+**Note importante :** Les exemples ci-dessous supposent que le `campushub-gateway-service` est en cours d'exécution sur `http://localhost:8080`. Grâce à la découverte de services, le gateway route automatiquement les requêtes avec le préfixe `/campushub-user-service` (le nom du service en minuscules) vers ce service.
+
+---
+
+#### 1. Inscription d'un nouvel utilisateur (Publique)
+
+Crée un nouveau compte utilisateur. Pour des raisons de sécurité, il est recommandé de ne créer que des comptes `STUDENT` via cet endpoint.
+
+- **Méthode :** `POST`
+- **Path :** `/api/auth/register`
+- **Permissions :** Publique
+
+**Exemple `curl`:**
+```bash
+curl --location 'http://localhost:8080/campushub-user-service/api/auth/register' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "nouvel_etudiant",
+    "password": "password123",
+    "fullName": "Jean Dupont",
+    "email": "jean.dupont@email.com",
+    "department": "Informatique",
+    "role": "STUDENT",
+    "studentNumber": "E123456"
+}'
+```
+
+---
+
+#### 2. Connexion d'un utilisateur (Publique)
+
+Authentifie un utilisateur et retourne un token JWT.
+
+- **Méthode :** `POST`
+- **Path :** `/api/auth/login`
+- **Permissions :** Publique
+
+**Exemple `curl`:**
+```bash
+curl --location 'http://localhost:8080/campushub-user-service/api/auth/login' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "username": "nouvel_etudiant",
+    "password": "password123"
+}'
+```
+
+---
+
+#### 3. Lister tous les utilisateurs (Authentifié)
+
+Récupère la liste de tous les utilisateurs.
+
+- **Méthode :** `GET`
+- **Path :** `/api/users`
+- **Permissions :** Tout utilisateur authentifié
+
+**Exemple `curl`:**
+```bash
+# Remplacez YOUR_JWT_TOKEN par un token valide
+curl --location 'http://localhost:8080/campushub-user-service/api/users' \
+--header 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+---
+
+#### 4. Obtenir un utilisateur par ID (Propriétaire ou Admin)
+
+Récupère les informations d'un utilisateur spécifique. Accessible uniquement par l'utilisateur lui-même ou un administrateur.
+
+- **Méthode :** `GET`
+- **Path :** `/api/users/{id}`
+- **Permissions :** Propriétaire du compte ou `ADMIN`
+
+**Exemple `curl` (en tant que propriétaire):**
+```bash
+# Remplacez YOUR_JWT_TOKEN par votre propre token valide
+curl --location 'http://localhost:8080/campushub-user-service/api/users/1' \
+--header 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+---
+
+#### 5. Mettre à jour un utilisateur (Propriétaire ou Admin)
+
+Met à jour les informations d'un utilisateur existant. Les utilisateurs non-administrateurs ne peuvent pas changer leur propre rôle.
+
+- **Méthode :** `PUT`
+- **Path :** `/api/users/{id}`
+- **Permissions :** Propriétaire du compte ou `ADMIN`
+
+**Exemple `curl` (en tant que propriétaire):**
+```bash
+# Remplacez YOUR_JWT_TOKEN par votre propre token valide
+curl --location --request PUT 'http://localhost:8080/campushub-user-service/api/users/1' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer YOUR_JWT_TOKEN' \
+--data-raw '{
+    "fullName": "Jean Dupont (Modifié)",
+    "email": "jean.dupont.modifie@email.com"
+}'
+```
+
+---
+
+#### 6. Supprimer un utilisateur (Propriétaire ou Admin)
+
+Supprime un utilisateur par son ID. Accessible uniquement par l'utilisateur lui-même ou un administrateur.
+
+- **Méthode :** `DELETE`
+- **Path :** `/api/users/{id}`
+- **Permissions :** Propriétaire du compte ou `ADMIN`
+
+**Exemple `curl` (en tant que propriétaire):**
+```bash
+# Remplacez YOUR_JWT_TOKEN par votre propre token valide
+curl --location --request DELETE 'http://localhost:8080/campushub-user-service/api/users/1' \
+--header 'Authorization: Bearer YOUR_JWT_TOKEN'
+```

@@ -3,6 +3,7 @@ package com.campushub.user.service;
 import com.campushub.user.dto.UserCreationRequest;
 import com.campushub.user.model.*;
 import com.campushub.user.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +13,11 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repo;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository repo) {
+    public UserServiceImpl(UserRepository repo, PasswordEncoder passwordEncoder) {
         this.repo = repo;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -48,7 +51,7 @@ public class UserServiceImpl implements UserService {
 
         // Populate common fields
         newUser.setUsername(request.getUsername());
-        newUser.setPassword(request.getPassword()); // Remember to encode the password in a real application
+        newUser.setPassword(passwordEncoder.encode(request.getPassword())); // Encode the password
         newUser.setFullName(request.getFullName());
         newUser.setEmail(request.getEmail());
         newUser.setDepartment(request.getDepartment());
@@ -60,7 +63,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User save(User user) {
         // This method is now primarily for updates.
-        // The createUser method should be used for creating new users with specific roles.
+        // We should check if the password is being updated and encode it if so.
+        // For simplicity in this step, we assume the raw password is set on the user object for update
+        if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+             user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         return repo.save(user);
     }
 
