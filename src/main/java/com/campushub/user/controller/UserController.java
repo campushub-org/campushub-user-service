@@ -1,5 +1,6 @@
 package com.campushub.user.controller;
 
+import com.campushub.user.dto.UserUpdateDto;
 import com.campushub.user.model.User;
 import com.campushub.user.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -35,19 +36,22 @@ public class UserController {
 
     @PutMapping("/{id}")
     @PreAuthorize("@userSecurity.isOwner(authentication, #id) or hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
+    public ResponseEntity<User> update(@PathVariable Long id, @RequestBody UserUpdateDto updateDto) {
         return service.findById(id).map(existing -> {
-            // simple field updates
-            existing.setUsername(user.getUsername());
-            existing.setFullName(user.getFullName());
-            existing.setEmail(user.getEmail());
-            // Prevent users from changing their own role
-            if (user.getRole() != null && SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                existing.setRole(user.getRole());
+            if (updateDto.getFullName() != null) {
+                existing.setFullName(updateDto.getFullName());
             }
-            existing.setDepartment(user.getDepartment());
-            if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-                existing.setPassword(user.getPassword());
+            if (updateDto.getEmail() != null) {
+                existing.setEmail(updateDto.getEmail());
+            }
+            // Role update should only be allowed by ADMIN and needs specific handling
+            // This method in UserUpdateDto does not expose role for regular users.
+            // Admin role updates would be through a different DTO or specific endpoint.
+            if (updateDto.getDepartment() != null) {
+                existing.setDepartment(updateDto.getDepartment());
+            }
+            if (updateDto.getPassword() != null && !updateDto.getPassword().isEmpty()) {
+                existing.setPassword(updateDto.getPassword()); // Password will be encoded by UserService.save()
             }
             service.save(existing);
             return ResponseEntity.ok(existing);
@@ -61,3 +65,4 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 }
+

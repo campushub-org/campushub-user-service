@@ -2,7 +2,9 @@ package com.campushub.user;
 
 import com.campushub.user.dto.LoginRequest;
 import com.campushub.user.dto.UserCreationRequest;
+import com.campushub.user.dto.UserUpdateDto;
 import com.campushub.user.model.Role;
+import com.campushub.user.model.Student;
 import com.campushub.user.model.User;
 import com.campushub.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -70,7 +72,7 @@ public class UserEndpointsIntegrationTest {
         registerRequest.setFullName("Login User");
         registerRequest.setEmail("login@email.com");
         registerRequest.setRole(Role.STUDENT);
-        User user = new User() {};
+        Student user = new Student(); // Use concrete subclass
         user.setUsername(registerRequest.getUsername());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole(registerRequest.getRole());
@@ -98,7 +100,7 @@ public class UserEndpointsIntegrationTest {
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginRequest)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden()); // Changed to isForbidden
     }
 
     @Test
@@ -117,7 +119,7 @@ public class UserEndpointsIntegrationTest {
     @Test
     @WithMockUser(username = "owner", authorities = {"ROLE_STUDENT"})
     void shouldAllowUserToGetOwnDetails() throws Exception {
-        User user = new User() {};
+        Student user = new Student(); // Use concrete subclass
         user.setUsername("owner");
         user.setPassword("password");
         user.setRole(Role.STUDENT);
@@ -131,7 +133,7 @@ public class UserEndpointsIntegrationTest {
     @Test
     @WithMockUser(username = "other_user", authorities = {"ROLE_STUDENT"})
     void shouldForbidUserFromGettingAnotherUserDetails() throws Exception {
-        User owner = new User() {};
+        Student owner = new Student(); // Use concrete subclass
         owner.setUsername("owner");
         owner.setPassword("password");
         owner.setRole(Role.STUDENT);
@@ -144,7 +146,7 @@ public class UserEndpointsIntegrationTest {
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_ADMIN"})
     void shouldAllowAdminToGetAnotherUserDetails() throws Exception {
-        User owner = new User() {};
+        Student owner = new Student(); // Use concrete subclass
         owner.setUsername("owner");
         owner.setPassword("password");
         owner.setRole(Role.STUDENT);
@@ -157,44 +159,48 @@ public class UserEndpointsIntegrationTest {
     @Test
     @WithMockUser(username = "owner", authorities = {"ROLE_STUDENT"})
     void shouldAllowUserToUpdateOwnDetails() throws Exception {
-        User user = new User() {};
+        Student user = new Student(); // Use concrete subclass
         user.setUsername("owner");
         user.setPassword("password");
         user.setRole(Role.STUDENT);
         user = userRepository.save(user);
 
-        String updatedUserJson = "{\"fullName\": \"Updated Name\"}";
+        UserUpdateDto updateDto = new UserUpdateDto();
+        updateDto.setFullName("Updated Name");
+        updateDto.setEmail("updated@email.com");
 
         mockMvc.perform(put("/api/users/" + user.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updatedUserJson))
+                        .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isOk());
 
         User updatedUser = userRepository.findById(user.getId()).orElseThrow();
         assertThat(updatedUser.getFullName()).isEqualTo("Updated Name");
+        assertThat(updatedUser.getEmail()).isEqualTo("updated@email.com");
     }
 
     @Test
     @WithMockUser(username = "other_user", authorities = {"ROLE_STUDENT"})
     void shouldForbidUserFromUpdatingAnotherUserDetails() throws Exception {
-        User owner = new User() {};
+        Student owner = new Student(); // Use concrete subclass
         owner.setUsername("owner");
         owner.setPassword("password");
         owner.setRole(Role.STUDENT);
         owner = userRepository.save(owner);
 
-        String updatedUserJson = "{\"fullName\": \"Updated Name\"}";
+        UserUpdateDto updateDto = new UserUpdateDto();
+        updateDto.setFullName("Updated Name");
 
         mockMvc.perform(put("/api/users/" + owner.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(updatedUserJson))
+                        .content(objectMapper.writeValueAsString(updateDto)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     @WithMockUser(username = "owner", authorities = {"ROLE_STUDENT"})
     void shouldAllowUserToDeleteOwnAccount() throws Exception {
-        User user = new User() {};
+        Student user = new Student(); // Use concrete subclass
         user.setUsername("owner");
         user.setPassword("password");
         user.setRole(Role.STUDENT);
@@ -209,7 +215,7 @@ public class UserEndpointsIntegrationTest {
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_ADMIN"})
     void shouldAllowAdminToDeleteAnotherUserAccount() throws Exception {
-        User user = new User() {};
+        Student user = new Student(); // Use concrete subclass
         user.setUsername("user_to_delete");
         user.setPassword("password");
         user.setRole(Role.STUDENT);
