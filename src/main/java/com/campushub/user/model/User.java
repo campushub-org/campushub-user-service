@@ -11,9 +11,11 @@ public abstract class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true, nullable = false)
     private String username;
     private String password; // stocker en clair pour l'instant (à remplacer par password encodé)
     private String fullName;
+    @Column(unique = true, nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)

@@ -1,6 +1,7 @@
 package com.campushub.user.service;
 
 import com.campushub.user.dto.UserCreationRequest;
+import com.campushub.user.exception.UserAlreadyExistsException;
 import com.campushub.user.model.*;
 import com.campushub.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,6 +23,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User createUser(UserCreationRequest request) {
+        if (repo.existsByUsernameOrEmail(request.getUsername(), request.getEmail())) {
+            throw new UserAlreadyExistsException("Username or email already taken.");
+        }
+
         User newUser;
 
         switch (request.getRole()) {
