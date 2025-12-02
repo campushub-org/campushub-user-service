@@ -2,10 +2,16 @@ package com.campushub.user.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,25 +19,25 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import io.jsonwebtoken.security.Keys;
-
-
+import jakarta.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.security.Key;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     private final CustomUserDetailsService customUserDetailsService;
-    
-    //TODO: a centraliser
-    private final Key secretKey = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS512);
+    private final Key secretKey;
 
-
-    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService) {
-        this.jwtService = jwtService;
+    public JwtAuthenticationFilter(CustomUserDetailsService customUserDetailsService, @Value("${jwt.secret}") String secret) {
         this.customUserDetailsService = customUserDetailsService;
+        byte[] secretBytes = DatatypeConverter.parseHexBinary(secret);
+        this.secretKey = Keys.hmacShaKeyFor(secretBytes);
     }
 
     @Override
@@ -42,6 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (StringUtils.hasText(jwt) && validateToken(jwt)) {
                 String username = getUsernameFromJWT(jwt);
+                log.info("JWT token successfully decoded for user: {}", username);
 
                 UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -49,9 +56,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.info("Authentication set in SecurityContextHolder for user: {}", username);
             }
+
         } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
+            log.error("Could not set user authentication in security context", ex);
         }
 
         filterChain.doFilter(request, response);
@@ -68,9 +77,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     public boolean validateToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(authToken);
+            log.info("JWT token successfully validated.");
             return true;
-        } catch (Exception ex) {
-            // Can be more specific with exceptions
+        } catch (SignatureException ex) {
+            log.error("Invalid JWT signature: {}", ex.getMessage());
+        } catch (MalformedJwtException ex) {
+            log.error("Invalid JWT token: {}", ex.getMessage());
+        } catch (ExpiredJwtException ex) {
+            log.error("Expired JWT token: {}", ex.getMessage());
+        } catch (UnsupportedJwtException ex) {
+            log.error("Unsupported JWT token: {}", ex.getMessage());
+        } catch (IllegalArgumentException ex) {
+            log.error("JWT claims string is empty: {}", ex.getMessage());
         }
         return false;
     }
@@ -81,6 +99,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.getSubject();
+        String username = claims.getSubject();
+        log.info("Extracted username '{}' from JWT.", username);
+        return username;
     }
 }
+
+
+

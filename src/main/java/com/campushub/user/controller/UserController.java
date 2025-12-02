@@ -14,6 +14,8 @@ import java.util.List;
 @RequestMapping("/api/users")
 public class UserController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(UserController.class);
+
     private final UserService service;
 
     public UserController(UserService service) {
@@ -21,9 +23,12 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("permitAll()")
     public List<User> all() {
-        return service.findAll();
+        log.info("Entering all() method - GET /api/users");
+        List<User> users = service.findAll();
+        log.info("Exiting all() method. Found {} users", users.size());
+        return users;
     }
 
     @GetMapping("/{id}")
