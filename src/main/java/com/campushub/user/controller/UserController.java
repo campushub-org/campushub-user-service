@@ -77,4 +77,12 @@ public class UserController {
                 .map(user -> ResponseEntity.ok(user.getRole().name()))
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/username/{username}")
+    @PreAuthorize("authentication.name == #username or hasAuthority('ROLE_ADMIN')")
+    public ResponseEntity<User> getByUsername(@PathVariable String username) {
+        return service.findByUsername(username)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
