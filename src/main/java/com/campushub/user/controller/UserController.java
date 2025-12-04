@@ -69,5 +69,12 @@ public class UserController {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-}
 
+    @GetMapping("/role")
+    public ResponseEntity<String> getRole() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return service.findByUsername(username)
+                .map(user -> ResponseEntity.ok(user.getRole().name()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+}

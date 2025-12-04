@@ -81,18 +81,31 @@ public class UserServiceImpl implements UserService {
         return repo.findById(id);
     }
 
-    @Override
-    public Optional<User> findByUsername(String username) {
-        return repo.findByUsername(username);
+        @Override                                                          
+        public Optional<User> findByUsername(String username) {            
+            return repo.findByUsername(username);                          
+        }  
+    
+        @Override
+        public Optional<User> findByEmail(String email) {
+            return repo.findByEmail(email);
+        }
+                                                                        
+                                                                           
+        @Override                                                          
+        public List<User> findAll() {                                      
+            return repo.findAll();                                         
+        }                                                                  
+                                                                           
+        @Override                                                          
+        public void deleteById(Long id) {                                  
+            repo.deleteById(id);                                           
+        }
+    
+        @Override
+        public String getUserRole(String email) {
+            return repo.findByEmail(email)
+                    .map(user -> user.getRole().name())
+                    .orElse(null);
+        }
     }
-
-    @Override
-    public List<User> findAll() {
-        return repo.findAll();
-    }
-
-    @Override
-    public void deleteById(Long id) {
-        repo.deleteById(id);
-    }
-}
