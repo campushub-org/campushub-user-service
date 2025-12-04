@@ -182,6 +182,22 @@ Supprime un utilisateur par son ID. Accessible uniquement par l'utilisateur lui-
 **Exemple `curl` (en tant que propriétaire):**
 ```bash
 # Remplacez YOUR_JWT_TOKEN par votre propre token valide
-curl --location --request DELETE 'http://localhost:8080/campushub-user-service/api/users/1' \
+curl --location --request DELETE 'http://localhost:8080/campushub-user-service/api/users/1' \                           
+--header 'Authorization: Bearer YOUR_JWT_TOKEN'                                                                         
+```
+
+---
+
+#### 7. Obtenir le rôle d'un utilisateur (Authentifié)
+
+Récupère le rôle de l'utilisateur authentifié.
+
+- **Méthode :** `GET`
+- **Path :** `/api/users/role`
+- **Permissions :** Tout utilisateur authentifié
+
+**Exemple `curl`:**
+```bash
+curl --location 'http://localhost:8080/campushub-user-service/api/users/role' \
 --header 'Authorization: Bearer YOUR_JWT_TOKEN'
 ```
