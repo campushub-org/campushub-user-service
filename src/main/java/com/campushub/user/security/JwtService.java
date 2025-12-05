@@ -86,15 +86,17 @@ public class JwtService {
 
                 .setSubject(user.getUsername())
 
-                .claim("role", user.getRole().name())
+                                .claim("role", user.getRole().name())
 
-                .setIssuedAt(now)
+                                .claim("id", user.getId()) // Added user ID
 
-                .setExpiration(expiryDate)
+                                .setIssuedAt(now)
 
-                .signWith(secretKey)
+                                .setExpiration(expiryDate)
 
-                .compact();
+                                .signWith(secretKey)
+
+                                .compact();
 
     }
 
