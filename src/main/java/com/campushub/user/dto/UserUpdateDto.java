@@ -8,6 +8,7 @@ public class UserUpdateDto {
     private String department;
     private String profilePictureUrl;
     private String password;
+    private String grade;
     // Role is intentionally excluded from direct update by regular users
     // An admin might update it, but that would be a different DTO or specific endpoint.
 
@@ -50,4 +51,13 @@ public class UserUpdateDto {
 
     public void setProfilePictureUrl(String profilePictureUrl) {
         this.profilePictureUrl = profilePictureUrl;
-    }}
+    }
+
+    public String getGrade() {
+        return grade;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
+}

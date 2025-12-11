@@ -1,6 +1,8 @@
 package com.campushub.user.controller;
 
 import com.campushub.user.dto.UserUpdateDto;
+import com.campushub.user.model.Role;
+import com.campushub.user.model.Teacher;
 import com.campushub.user.model.User;
 import com.campushub.user.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +62,9 @@ public class UserController {
             }
             if (updateDto.getProfilePictureUrl() != null) {
                 existing.setProfilePictureUrl(updateDto.getProfilePictureUrl());
+            }
+            if (existing.getRole() == Role.TEACHER && updateDto.getGrade() != null) {
+                ((Teacher) existing).setGrade(updateDto.getGrade());
             }
             service.save(existing);
             return ResponseEntity.ok(existing);
