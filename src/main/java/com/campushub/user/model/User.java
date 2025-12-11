@@ -22,6 +22,7 @@ public abstract class User {
     private Role role;
 
     private String department;
+    private String profilePictureUrl; // New field for profile picture URL
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -51,4 +52,7 @@ public abstract class User {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
 }

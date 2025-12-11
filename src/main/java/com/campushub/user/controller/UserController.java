@@ -58,6 +58,9 @@ public class UserController {
             if (updateDto.getPassword() != null && !updateDto.getPassword().isEmpty()) {
                 existing.setPassword(updateDto.getPassword()); // Password will be encoded by UserService.save()
             }
+            if (updateDto.getProfilePictureUrl() != null) {
+                existing.setProfilePictureUrl(updateDto.getProfilePictureUrl());
+            }
             service.save(existing);
             return ResponseEntity.ok(existing);
         }).orElse(ResponseEntity.notFound().build());
