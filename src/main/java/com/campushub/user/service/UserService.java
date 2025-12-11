@@ -9,10 +9,11 @@ import java.util.Optional;
 public interface UserService {
     User createUser(UserCreationRequest request);
     User save(User user);
-        Optional<User> findById(Long id);
-        Optional<User> findByUsername(String username);
-        Optional<User> findByEmail(String email);
-        List<User> findAll();
-        void deleteById(Long id);
-        String getUserRole(String email);
-    }
+    Optional<User> findById(Long id);
+    Optional<User> findByUsername(String username);
+    Optional<User> findByEmail(String email);
+    List<User> findAll();
+    List<User> findAllByDepartment(String department);
+    void deleteById(Long id);
+    String getUserRole(String email);
+}

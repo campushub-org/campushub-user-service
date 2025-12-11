@@ -88,4 +88,9 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/department/{department}")
+    public List<User> getUsersByDepartment(@PathVariable String department) {
+        return service.findAllByDepartment(department);
+    }
 }
