@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("@userSecurity.isOwner(authentication, #id) or hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("@userSecurity.isOwner(authentication, #id) or hasAnyAuthority('ROLE_ADMIN', 'ROLE_DEAN')")
     public ResponseEntity<User> get(@PathVariable Long id) {
         return service.findById(id)
                 .map(ResponseEntity::ok)
@@ -96,6 +96,8 @@ public class UserController {
 
     @GetMapping("/department/{department}")
     public List<User> getUsersByDepartment(@PathVariable String department) {
-        return service.findAllByDepartment(department);
+        List<User> users = service.findAllByDepartment(department);
+        log.info("Found {} users in department '{}': {}", users.size(), department, users.stream().map(User::getUsername).collect(java.util.stream.Collectors.toList()));
+        return users;
     }
 }
