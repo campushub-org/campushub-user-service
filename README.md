@@ -1,203 +1,66 @@
-# campushub-user-service - Service de Gestion des Utilisateurs
+# 👤 CampusHub - User Service
 
-Ce service est responsable de la gestion des utilisateurs au sein de l'écosystème Campushub. Il gère les opérations CRUD (Create, Read, Update, Delete) pour les utilisateurs, l'authentification, l'autorisation et potentiellement d'autres fonctionnalités liées aux utilisateurs.
+[![Java](https://img.shields.io/badge/Java-17-ED8B00?style=for-the-badge&logo=java&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.5-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Spring Security](https://img.shields.io/badge/Spring_Security-6.2-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white)](https://spring.io/projects/spring-security)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 
-### Fonctionnalités
-
-*   **Gestion des utilisateurs**: Création, lecture, mise à jour et suppression des comptes utilisateurs.
-*   **Authentification & Autorisation**: Gère l'accès et les permissions des utilisateurs.
-*   **Intégration Eureka**: S'enregistre auprès de `campushub-registry` et peut découvrir d'autres services.
-*   **Configuration centralisée**: Obtient sa configuration de `campushub-config`.
-*   **Persistance des données**: Interagit avec une base de données MySQL (`campushub-user-db`) pour stocker les informations des utilisateurs.
-
-### Comment ça marche
-
-`campushub-user-service` est une application Spring Boot. Au démarrage, il se connecte à `campushub-config` pour obtenir sa configuration, s'enregistre auprès de `campushub-registry`, et se connecte à sa base de données MySQL dédiée (`campushub-user-db`). Il expose ensuite des API REST pour interagir avec les données utilisateurs.
-
-### Commandes Utiles
-
-#### Construire le service (localement, sans Docker)
-
-Pour construire le fichier JAR exécutable du service:
-
-```bash
-cd campushub-deployment/campushub-user-service
-./mvnw clean install -DskipTests -Dspring.cloud.config.uri=http://localhost:8888
-```
-*(Note: L'option `-Dspring.cloud.config.uri=http://localhost:8888` est nécessaire pour que les tests et la construction locale puissent se connecter au service `campushub-config` si celui-ci est démarré via Docker sur votre machine locale. `-DskipTests` est utilisé car les tests requièrent une base de données MySQL et d'autres services qui peuvent ne pas être disponibles localement.)*
-
-#### Exécuter le service (localement, sans Docker)
-
-Assurez-vous d'avoir construit le JAR au préalable.
-
-```bash
-cd campushub-deployment/campushub-user-service
-java -jar target/campushub-user-service.jar
-```
-
-Le service sera accessible sur `http://localhost:8081`.
-
-#### Construire et exécuter avec Docker Compose
-
-Dans le répertoire `campushub-deployment`, ce service est défini dans le fichier `docker-compose.yml`.
-
-Pour construire l'image Docker (cela inclut la construction du JAR si ce n'est pas déjà fait):
-
-```bash
-cd campushub-deployment
-docker-compose build campushub-user-service
-```
-
-Pour démarrer le conteneur du service:
-
-```bash
-cd campushub-deployment
-docker-compose up -d campushub-user-service
-```
-
-Pour vérifier les logs du service une fois démarré:
-
-```bash
-cd campushub-deployment
-docker-compose logs campushub-user-service
-```
-
-### Endpoints de l'API
-
-Voici la liste des endpoints disponibles pour ce service.
-
-**Note importante :** Les exemples ci-dessous supposent que le `campushub-gateway-service` est en cours d'exécution sur `http://localhost:8080`. Grâce à la découverte de services, le gateway route automatiquement les requêtes avec le préfixe `/campushub-user-service` (le nom du service en minuscules) vers ce service.
+> Le **User Service** est le garant de la sécurité et de l'intégrité des identités au sein de l'écosystème CampusHub. Il gère l'authentification, les autorisations basées sur les rôles (RBAC) et les profils utilisateurs enrichis.
 
 ---
 
-#### 1. Inscription d'un nouvel utilisateur (Publique)
+## 🚀 Fonctionnalités Clés
 
-Crée un nouveau compte utilisateur. Pour des raisons de sécurité, il est recommandé de ne créer que des comptes `STUDENT` via cet endpoint.
-
-- **Méthode :** `POST`
-- **Path :** `/api/auth/register`
-- **Permissions :** Publique
-
-**Exemple `curl`:**
-```bash
-curl --location 'http://localhost:8080/campushub-user-service/api/auth/register' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "username": "nouvel_etudiant",
-    "password": "password123",
-    "fullName": "Jean Dupont",
-    "email": "jean.dupont@email.com",
-    "department": "Informatique",
-    "role": "STUDENT",
-    "studentNumber": "E123456"
-}'
-```
+- **Authentification Stateless** : Implémentation complète de JWT (JSON Web Tokens).
+- **Modèle de Données Hérité** : Gestion fine des types d'utilisateurs via une stratégie `JOINED` (Admin, Doyen, Enseignant, Étudiant).
+- **RBAC (Role-Based Access Control)** : Sécurisation granulaire des endpoints par annotations `@PreAuthorize`.
+- **Intégration Cloud** : Configuration centralisée et enregistrement automatique sur Eureka.
+- **Initialisation Automatique** : Système de seeder intégré pour les environnements de test.
 
 ---
 
-#### 2. Connexion d'un utilisateur (Publique)
+## 🛠️ Stack Technique
 
-Authentifie un utilisateur et retourne un token JWT.
-
-- **Méthode :** `POST`
-- **Path :** `/api/auth/login`
-- **Permissions :** Publique
-
-**Exemple `curl`:**
-```bash
-curl --location 'http://localhost:8080/campushub-user-service/api/auth/login' \
---header 'Content-Type: application/json' \
---data-raw '{
-    "username": "nouvel_etudiant",
-    "password": "password123"
-}'
-```
+- **Core :** Spring Boot 3.2.5
+- **Sécurité :** Spring Security + JJWT
+- **Persistence :** Spring Data JPA + Hibernate
+- **Base de données :** MySQL 8.0
+- **Discovery :** Eureka Client
 
 ---
 
-#### 3. Lister tous les utilisateurs (Authentifié)
+## 📡 API Endpoints Principaux
 
-Récupère la liste de tous les utilisateurs.
-
-- **Méthode :** `GET`
-- **Path :** `/api/users`
-- **Permissions :** Tout utilisateur authentifié
-
-**Exemple `curl`:**
-```bash
-# Remplacez YOUR_JWT_TOKEN par un token valide
-curl --location 'http://localhost:8080/campushub-user-service/api/users' \
---header 'Authorization: Bearer YOUR_JWT_TOKEN'
-```
+| Méthode | Path | Description | Accès |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/users/register` | Inscription d'un nouvel utilisateur | Public |
+| `POST` | `/api/users/login` | Authentification et génération du JWT | Public |
+| `GET` | `/api/users/:id` | Récupération du profil détaillé | Propriétaire / Admin |
+| `PUT` | `/api/users/:id` | Mise à jour des informations de profil | Propriétaire / Admin |
+| `DELETE` | `/api/users/:id` | Suppression d'un compte utilisateur | Admin |
 
 ---
 
-#### 4. Obtenir un utilisateur par ID (Propriétaire ou Admin)
+## ⚙️ Configuration & Installation
 
-Récupère les informations d'un utilisateur spécifique. Accessible uniquement par l'utilisateur lui-même ou un administrateur.
+### Build du package (Crucial)
+Comme le `Dockerfile` utilise le fichier `.jar` généré localement, vous devez compiler le projet avant de build l'image Docker :
 
-- **Méthode :** `GET`
-- **Path :** `/api/users/{id}`
-- **Permissions :** Propriétaire du compte ou `ADMIN`
-
-**Exemple `curl` (en tant que propriétaire):**
 ```bash
-# Remplacez YOUR_JWT_TOKEN par votre propre token valide
-curl --location 'http://localhost:8080/campushub-user-service/api/users/1' \
---header 'Authorization: Bearer YOUR_JWT_TOKEN'
+# Générer le JAR en sautant les tests
+./mvnw clean package -DskipTests
+```
+
+### Lancement Local
+```bash
+# Lancer via Maven
+./mvnw spring-boot:run
+```
+
+### Déploiement Docker
+```bash
+docker build -t campushub-user-service .
 ```
 
 ---
-
-#### 5. Mettre à jour un utilisateur (Propriétaire ou Admin)
-
-Met à jour les informations d'un utilisateur existant. Les utilisateurs non-administrateurs ne peuvent pas changer leur propre rôle.
-
-- **Méthode :** `PUT`
-- **Path :** `/api/users/{id}`
-- **Permissions :** Propriétaire du compte ou `ADMIN`
-
-**Exemple `curl` (en tant que propriétaire):**
-```bash
-# Remplacez YOUR_JWT_TOKEN par votre propre token valide
-curl --location --request PUT 'http://localhost:8080/campushub-user-service/api/users/1' \
---header 'Content-Type: application/json' \
---header 'Authorization: Bearer YOUR_JWT_TOKEN' \
---data-raw '{
-    "fullName": "Jean Dupont (Modifié)",
-    "email": "jean.dupont.modifie@email.com"
-}'
-```
-
----
-
-#### 6. Supprimer un utilisateur (Propriétaire ou Admin)
-
-Supprime un utilisateur par son ID. Accessible uniquement par l'utilisateur lui-même ou un administrateur.
-
-- **Méthode :** `DELETE`
-- **Path :** `/api/users/{id}`
-- **Permissions :** Propriétaire du compte ou `ADMIN`
-
-**Exemple `curl` (en tant que propriétaire):**
-```bash
-# Remplacez YOUR_JWT_TOKEN par votre propre token valide
-curl --location --request DELETE 'http://localhost:8080/campushub-user-service/api/users/1' \                           
---header 'Authorization: Bearer YOUR_JWT_TOKEN'                                                                         
-```
-
----
-
-#### 7. Obtenir le rôle d'un utilisateur (Authentifié)
-
-Récupère le rôle de l'utilisateur authentifié.
-
-- **Méthode :** `GET`
-- **Path :** `/api/users/role`
-- **Permissions :** Tout utilisateur authentifié
-
-**Exemple `curl`:**
-```bash
-curl --location 'http://localhost:8080/campushub-user-service/api/users/role' \
---header 'Authorization: Bearer YOUR_JWT_TOKEN'
-```
+<p align="center">Sûreté et Confidentialité au service de l'éducation</p>
