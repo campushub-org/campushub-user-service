@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TeacherRepository extends JpaRepository<Teacher, Long> {
-    // You can add custom queries here, for example:
-    // Optional<Teacher> findByOfficeNumber(String officeNumber);
+    boolean existsByEmail(String email);
 }
