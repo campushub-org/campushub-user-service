@@ -96,8 +96,12 @@ public class UserController {
 
     @GetMapping("/department/{department}")
     public List<User> getUsersByDepartment(@PathVariable String department) {
-        List<User> users = service.findAllByDepartment(department);
-        log.info("Found {} users in department '{}': {}", users.size(), department, users.stream().map(User::getUsername).collect(java.util.stream.Collectors.toList()));
-        return users;
+        return service.findAllByDepartment(department);
+    }
+
+    @GetMapping("/teachers/department/{department}")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_DEAN')")
+    public List<User> getTeachersByDepartment(@PathVariable String department) {
+        return service.findTeachersByDepartment(department);
     }
 }

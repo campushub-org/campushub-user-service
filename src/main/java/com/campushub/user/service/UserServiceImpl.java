@@ -101,6 +101,11 @@ public class UserServiceImpl implements UserService {
     public List<User> findAllByDepartment(String department) {
         return repo.findAllByDepartment(department);
     }
+    
+    @Override
+    public List<User> findTeachersByDepartment(String department) {
+        return repo.findByDepartmentAndRole(department, Role.TEACHER);
+    }
                                                                            
     @Override
     public void deleteById(Long id) {

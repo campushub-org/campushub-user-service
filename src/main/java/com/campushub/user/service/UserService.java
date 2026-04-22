@@ -14,6 +14,7 @@ public interface UserService {
     Optional<User> findByEmail(String email);
     List<User> findAll();
     List<User> findAllByDepartment(String department);
+    List<User> findTeachersByDepartment(String department);
     void deleteById(Long id);
     String getUserRole(String email);
 }
