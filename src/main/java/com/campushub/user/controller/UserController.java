@@ -34,7 +34,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("@userSecurity.isOwner(authentication, #id) or hasAnyAuthority('ROLE_ADMIN', 'ROLE_DEAN')")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<User> get(@PathVariable Long id) {
         return service.findById(id)
                 .map(ResponseEntity::ok)
